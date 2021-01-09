@@ -1,0 +1,96 @@
+<title>unicode</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  padding: 8px;
+  font-family: monospace;
+}
+
+#input {
+  margin-bottom: 16px;
+  border-radius: 2px;
+  border: 0;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 0 32px rgba(0, 0, 0, .25);
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  outline: none;
+}
+
+#sandbox {
+  display: none;
+}
+
+#list {
+  list-style: none;
+  margin: 0; 
+  padding: 0;
+  border-top: 1px solid #EEE;
+}
+
+#list > li {
+  display: flex;
+  border-bottom: 1px solid #EEE;
+}
+
+#list > li > div {
+  width: 25%;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+#list > li > div + div {
+  border-left: 1px solid #EEE;
+}
+</style>
+
+<div id="sandbox"></div>
+
+<input type="text" id="input" autocomplete="off"/>
+
+<ul id="list"></ul>
+
+<script>
+const sandbox = document.getElementById('sandbox');
+const input = document.getElementById('input');
+const list = document.getElementById('list');
+
+function parseInput() {
+  let text = input.value;
+  
+  (text.match(/&.+;/ig) || []).forEach(entity => {
+    // Insert the HTML entity as HTML in an HTML element:
+    sandbox.innerHTML = entity;
+    
+    // Retrieve the HTML elements innerText to get the parsed entity (the actual character):
+    text = text.replace(entity, sandbox.innerText);
+  });
+  
+  list.innerHTML = text.split('').map(char => {
+    const dec = char.charCodeAt(0);
+    const hex = dec.toString(16).toUpperCase();
+    const code = hex.length === 2 ? `\\x${ hex }` : `\\u${ hex }`;
+    const link = `0000${ code }`.slice(-Math.min(4, hex.length ));
+  
+    return `
+      <li>
+        <div>${ char }</div>
+        <div>${ dec }</div>
+        <div>${ hex }</div>
+        <div><a href="http://www.fileformat.info/info/unicode/char/${ link }" target="_blank">${ code }</a></div>
+      </li>
+    `;
+  }).join('');  
+}
+
+input.value = '';
+
+input.oninput = parseInput;
+
+parseInput();
+</script>
